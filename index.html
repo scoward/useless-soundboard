@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Soundboard</title>
+	</head>
+
+	<body>
+		<script type="text/javascript">
+			function log(msg) {
+				setTimeout(function() {
+					throw new Error(msg);
+				}, 0);
+			}
+		</script>
+		<script type="text/javascript">
+			init();
+			
+			var currentAudio;	
+
+			function init() {	
+				//document.addEventListener('mousemove', onDocumentMouseMove, false);
+			//	document.addEventListener('resize', onWindowResize, false);
+
+				document.addEventListener('dragover', onDocumentDragOver, false);
+				document.addEventListener('dragleave', onDocumentLeave, false);
+				document.addEventListener('drop', onDocumentDrop, false);
+			}
+
+			function onDocumentDragOver(event) {
+				event.preventDefault();
+			}
+			
+			function onDocumentLeave(event) {
+				event.preventDefault();
+			}
+
+			function onDocumentDrop(event) {
+				event.preventDefault();
+
+				log(event.target.result);
+				log(event.dataTransfer.files[0].fileName);
+
+				var file = event.dataTransfer.files[0];
+				var reader = new FileReader();
+
+				reader.onload = function(event) {
+					loadAudio(event.target.result);
+				}
+
+				reader.readAsDataURL(file);
+			}
+		
+			function loadAudio(src) {
+				currentAudio = document.createElement( 'audio' );
+				currentAudio.src = src;
+				currentAudio.play();
+			}
+
+		</script>
+		Hi
+	</body>
+</html>
