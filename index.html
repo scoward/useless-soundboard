@@ -2,9 +2,17 @@
 <html>
 	<head>
 		<title>Soundboard</title>
+        <style type="text/css">
+            .box {
+                background-color: red;
+                width: 200px;
+                height: 100px;
+            }
+        </style>
 	</head>
 
 	<body>
+        <div id="soundContainer" class="center"/>
 		<script type="text/javascript">
 			function log(msg) {
 				setTimeout(function() {
@@ -12,10 +20,11 @@
 				}, 0);
 			}
 		</script>
+        <script type="text/javascript" src="sound.js"></script>
 		<script type="text/javascript">
-			init();
-			
-			var currentAudio;	
+            var sounds = new Array();
+            var soundContainer = document.getElementById('soundContainer');
+            init();
 
 			function init() {	
 				//document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -37,26 +46,65 @@
 			function onDocumentDrop(event) {
 				event.preventDefault();
 
-				log(event.target.result);
-				log(event.dataTransfer.files[0].fileName);
-
 				var file = event.dataTransfer.files[0];
 				var reader = new FileReader();
 
 				reader.onload = function(event) {
 					loadAudio(event.target.result);
-				}
+				};
 
-				reader.readAsDataURL(file);
+                reader.onerror = errorHandler;
+
+				reader.readAsArrayBuffer(file);
 			}
-		
-			function loadAudio(src) {
-				currentAudio = document.createElement( 'audio' );
-				currentAudio.src = src;
-				currentAudio.play();
+
+            function errorHandler(evt) {
+                switch(evt.target.error.code) {
+                    case evt.target.error.NOT_FOUND_ERR:
+                        log('File Not Found!');
+                        break;
+                    case evt.target.error.NOT_READABLE_ERR:
+                        log('File is not readable');
+                        break;
+                    case evt.target.error.ABORT_ERR:
+                        break;
+                    default:
+                        log('An error occurred reading the file.');
+                }
+            }
+
+			function loadAudio(buffer) {
+                var sound = new Sound();
+                sound.initAudio(buffer);
+                sounds.push(sound);
+
+                var soundDiv = document.createElement("div");
+                var playButton = document.createElement("button");
+                var t = document.createTextNode("Play");
+                playButton.appendChild(t);
+                playButton.onclick = function() {
+                    sound.play();
+                };
+                soundDiv.appendChild(playButton);
+
+                var pauseButton = document.createElement("button");
+                t = document.createTextNode("Pause");
+                pauseButton.appendChild(t);
+                pauseButton.onclick = function() {
+                    sound.pause();
+                };
+                soundDiv.appendChild(pauseButton);
+
+                var stopButton = document.createElement("button");
+                t = document.createTextNode("Stop");
+                stopButton.appendChild(t);
+                stopButton.onclick = function() {
+                    sound.stop();
+                };
+                soundDiv.appendChild(stopButton);
+                soundContainer.appendChild(soundDiv);
 			}
 
 		</script>
-		Hi
 	</body>
 </html>
