@@ -32,7 +32,8 @@
 
 				document.addEventListener('dragover', onDocumentDragOver, false);
 				document.addEventListener('dragleave', onDocumentLeave, false);
-				document.addEventListener('drop', onDocumentDrop, false);
+                document.addEventListener('drop', onDocumentDrop, false);
+                document.onkeypress = onKeyPress;
 			}
 
 			function onDocumentDragOver(event) {
@@ -50,13 +51,21 @@
 				var reader = new FileReader();
 
 				reader.onload = function(event) {
-					loadAudio(event.target.result);
+					loadAudio(event.target.result, file);
 				};
 
                 reader.onerror = errorHandler;
 
 				reader.readAsArrayBuffer(file);
 			}
+
+            function onKeyPress(e) {
+                e = e || window.event;
+                var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
+                if(charCode) {
+                    // play the sound associated with the charcode...
+                }
+            }
 
             function errorHandler(evt) {
                 switch(evt.target.error.code) {
@@ -73,19 +82,40 @@
                 }
             }
 
-			function loadAudio(buffer) {
+			function loadAudio(buffer, file) {
                 var sound = new Sound();
                 sound.initAudio(buffer);
+                sound.setName(file.name);
                 sounds.push(sound);
 
+                var soundDiv = createAudioDiv(sound);
+                soundDiv.sound = sound; // set here for convenience
+                soundContainer.appendChild(soundDiv);
+			}
+
+            function createAudioDiv(sound) {
                 var soundDiv = document.createElement("div");
+                soundDiv.classList.add('sound');
+
+                var nameDiv = document.createElement("div");
+                nameDiv.classList.add('name');
+                nameDiv.innerHTML = sound.getName();
+                soundDiv.appendChild(nameDiv);
+
+                var canvas = document.createElement("canvas");
+                canvas.width = 250;
+                canvas.height = 100;
+                soundDiv.appendChild(canvas);
+
+                var controlsDiv = document.createElement("div");
+                controlsDiv.classList.add('controlsDiv');
                 var playButton = document.createElement("button");
                 var t = document.createTextNode("Play");
                 playButton.appendChild(t);
                 playButton.onclick = function() {
                     sound.play();
                 };
-                soundDiv.appendChild(playButton);
+                controlsDiv.appendChild(playButton);
 
                 var pauseButton = document.createElement("button");
                 t = document.createTextNode("Pause");
@@ -93,7 +123,7 @@
                 pauseButton.onclick = function() {
                     sound.pause();
                 };
-                soundDiv.appendChild(pauseButton);
+                controlsDiv.appendChild(pauseButton);
 
                 var stopButton = document.createElement("button");
                 t = document.createTextNode("Stop");
@@ -101,9 +131,22 @@
                 stopButton.onclick = function() {
                     sound.stop();
                 };
-                soundDiv.appendChild(stopButton);
-                soundContainer.appendChild(soundDiv);
-			}
+                controlsDiv.appendChild(stopButton);
+
+                var slider = document.createElement("input");
+                slider.type = "range";
+                slider.min = 0;
+                slider.max = 1;
+                slider.step = 0.05;
+                slider.value = sound.getVolume();
+                slider.onchange = function() {
+                    sound.changeVolume(slider.value);
+                }
+                controlsDiv.appendChild(slider);
+
+                soundDiv.appendChild(controlsDiv);
+                return soundDiv;
+            }
 
 		</script>
 	</body>

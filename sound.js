@@ -8,6 +8,7 @@ function Sound() {
 
     var self_ = this;
     var source_ = null;
+    var gain_ = null;
     var buffer_ = null;
     var title_ = null;
     var duration_ = null;
@@ -16,6 +17,8 @@ function Sound() {
     var startTime_ = null;
     var currentTime_ = 0;
     var intervalLast_ = 0;
+    var name_ = null;
+    var volume_ = 0.5;
 
     this.initAudio = function(arrayBuffer) {
         if(buffer_ == null) {
@@ -29,19 +32,23 @@ function Sound() {
             self_.stop();
         }
 
+        gain_ = context_.createGainNode();
+        gain_.gain.value = volume_;
         source_ = context_.createBufferSource();
         source_.buffer = buffer_;
-        source_.connect(context_.destination);
+        source_.connect(gain_);
+        gain_.connect(context_.destination);
+
         startTime_ = context_.currentTime;
         intervalLast_ = startTime_;
         source_.noteGrainOn(0, currentTime_, duration_ - currentTime_);
-        // set up an interval that calls 
         interval_ = setInterval(function() {
-            if(intervalLast_ != context_.currentTime) {
+            // let's wakeup around a second-ish.
+            if(context_.currentTime - intervalLast_ > 1000) {
                 intervalLast_ = context_.currentTime;
                 self_.onCurrentTimeChanged();
             }
-        }, 50);
+        }, 50); // seriously...50 millis, get better
         playing_ = true;
     }
 
@@ -64,6 +71,16 @@ function Sound() {
         }
     }
 
+    this.changeVolume = function(volume) {
+        if(volume >= 0.0) {
+            this.volume_ = volume;
+            if(gain_) {   
+                gain_.gain.value = volume;
+            }   
+        }
+    }
+    this.getVolume = function() {return volume_;}
+
     this.onCurrentTimeChanged = function() {}
     this.getCurrentTime = function() {
         if(playing_) {
@@ -78,4 +95,6 @@ function Sound() {
         }
     }
     this.getDuration = function() {return duration_;}
+    this.getName = function() {return name_;}
+    this.setName = function(name) {name_ = name};
 }
