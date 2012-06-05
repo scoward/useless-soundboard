@@ -63,7 +63,12 @@
                 e = e || window.event;
                 var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
                 if(charCode) {
-                    // play the sound associated with the charcode...
+                    switch(charCode) {
+                        case 32:
+                            if(currentSound != null) {
+                                currentSound.toggle();
+                            }
+                    }
                 }
             }
 
@@ -145,6 +150,14 @@
                 controlsDiv.appendChild(slider);
 
                 soundDiv.appendChild(controlsDiv);
+
+                // setup soundDiv callbacks
+                soundDiv.onclick = function(e) {
+                    if(currentSound != soundDiv.sound) {
+                        currentSound = soundDiv.sound;
+                    }
+                }
+
                 return soundDiv;
             }
 
