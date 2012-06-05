@@ -24,12 +24,10 @@
             var sounds = new Array();
             var currentSound = null;
             var soundContainer = document.getElementById('soundContainer');
+            var keymap = {};
             init();
 
 			function init() {	
-				//document.addEventListener('mousemove', onDocumentMouseMove, false);
-			//	document.addEventListener('resize', onWindowResize, false);
-
 				document.addEventListener('dragover', onDocumentDragOver, false);
 				document.addEventListener('dragleave', onDocumentLeave, false);
                 document.addEventListener('drop', onDocumentDrop, false);
@@ -61,15 +59,46 @@
 
             function onKeyPress(e) {
                 e = e || window.event;
+                var keys = keymap;
                 var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
                 if(charCode) {
                     switch(charCode) {
-                        case 32:
+                        case 32: // spacebar
                             if(currentSound != null) {
                                 currentSound.toggle();
                             }
+                            break;
+                        case 46: // delete
+                            if(currentSound != null) {
+                                if(keymap.hasOwnProperty(charCode)) {
+                                    removeKeyMapValue(charCode, currentSound);
+                                }
+                            }
+                            break;
+                        default:
+                            if(keymap.hasOwnProperty(charCode)) {
+                                if(e.shiftKey) {
+                                    keymap[charCode].stop();
+                                } else {
+                                    keymap[charCode].toggle();
+                                }
+                            } else {
+                                if(currentSound != null) {
+                                    setKeyMapValue(charCode, currentSound);
+                                }
+                            }
+                            break;
                     }
                 }
+            }
+
+            function setKeyMapValue(charCode, sound) {
+                keymap[charCode] = sound;
+            }
+
+            function removeKeyMapValue(charCode, sound) {
+                delete keymap[charCode];
+                sound.stop();
             }
 
             function errorHandler(evt) {
