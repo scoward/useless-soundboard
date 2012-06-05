@@ -71,6 +71,14 @@ function Sound() {
         }
     }
 
+    this.toggle = function() {
+        if(playing_) {
+            self_.pause();
+        } else {
+            self_.play();
+        }
+    }
+
     this.changeVolume = function(volume) {
         if(volume >= 0.0) {
             this.volume_ = volume;
