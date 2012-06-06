@@ -22,7 +22,7 @@
         <script type="text/javascript" src="sound.js"></script>
 		<script type="text/javascript">
             var sounds = new Array();
-            var currentSound = null;
+            var currentSoundDiv = null
             var soundContainer = document.getElementById('soundContainer');
             var keymap = {};
             init();
@@ -59,32 +59,31 @@
 
             function onKeyPress(e) {
                 e = e || window.event;
-                var keys = keymap;
                 var charCode = (typeof e.which == "number") ? e.which : e.keyCode;
                 if(charCode) {
                     switch(charCode) {
                         case 32: // spacebar
-                            if(currentSound != null) {
-                                currentSound.toggle();
+                            if(currentSoundDiv != null) {
+                                currentSound.sound.toggle();
                             }
                             break;
                         case 46: // delete
-                            if(currentSound != null) {
+                            if(currentSoundDiv != null) {
                                 if(keymap.hasOwnProperty(charCode)) {
-                                    removeKeyMapValue(charCode, currentSound);
+                                    removeKeyMapValue(charCode, currentSoundDiv);
                                 }
                             }
                             break;
                         default:
                             if(keymap.hasOwnProperty(charCode)) {
                                 if(e.shiftKey) {
-                                    keymap[charCode].stop();
+                                    keymap[charCode].sound.stop();
                                 } else {
-                                    keymap[charCode].toggle();
+                                    keymap[charCode].sound.toggle();
                                 }
                             } else {
-                                if(currentSound != null) {
-                                    setKeyMapValue(charCode, currentSound);
+                                if(currentSoundDiv != null) {
+                                    setKeyMapValue(charCode, currentSoundDiv);
                                 }
                             }
                             break;
@@ -92,13 +91,15 @@
                 }
             }
 
-            function setKeyMapValue(charCode, sound) {
-                keymap[charCode] = sound;
+            function setKeyMapValue(charCode, soundDiv) {
+                keymap[charCode] = soundDiv;
+                soundDiv.charDiv.innerHTML = String.fromCharCode(charCode);
             }
 
-            function removeKeyMapValue(charCode, sound) {
+            function removeKeyMapValue(charCode, soundDiv) {
                 delete keymap[charCode];
-                sound.stop();
+                soundDiv.sound.stop();
+                soundDiv.charDiv.innerHTML = "";
             }
 
             function errorHandler(evt) {
@@ -178,12 +179,16 @@
                 }
                 controlsDiv.appendChild(slider);
 
+                var charDiv = document.createElement("span");
+                controlsDiv.appendChild(charDiv);
+                soundDiv.charDiv = charDiv;
+
                 soundDiv.appendChild(controlsDiv);
 
                 // setup soundDiv callbacks
                 soundDiv.onclick = function(e) {
-                    if(currentSound != soundDiv.sound) {
-                        currentSound = soundDiv.sound;
+                    if(currentSoundDiv != soundDiv) {
+                        currentSoundDiv = soundDiv;
                     }
                 }
 
